@@ -8,9 +8,9 @@ This workshop is organised in lab iterations, starting from the basics and build
 
 NOTE: The following labs are created on a Linux/OSX machine, hence some commands may need slight adjustments when working on Windows, e.g. replace `${ENV_VAR}` by `%ENV_VAR%`, and replace forward-slashes by back-slashes (although in some commands Windows also understand forward-slashes).
 
-NOTE: The following labs have been tested with Spring Boot 2.1.3, Apache Maven 3.6.0 and Java 11.0.2, the latest versions of them available at the time of publishing this.
+NOTE: The following labs have been tested with Spring Boot 2.1.5, Apache Maven 3.6.0 and Java 11.0.3, the latest versions of them available at the time of publishing this.
 
-HISTORY NOTE: This workshop was first featured in a live coding session in OpenSlava 2016 conference, in the beautiful city of Bratislava, and the pipelines lab iteration is based on the `workshop-pipelines` workshop, first presented in Oracle Code One San Francisco 2018 conference.
+HISTORY NOTE: This workshop was first featured as a live coding session in OpenSlava 2016 conference, in the beautiful city of Bratislava, and the pipelines lab iteration is based on the `workshop-pipelines` workshop, first featured as a talk in Oracle Code One San Francisco 2018 conference.
 
 ## Lab iteration 1) The basics
 
@@ -558,7 +558,7 @@ Once the Hystric stream is registered, try again to access the edge service, wit
 
 ### 2.1) Set up Swarm
 
-The following instructions will show how to create a simple one in VirtualBox, in the case that a swarm is not already available. In the case that a Docker Swarm is already available, skip to section 2.2.
+The following instructions will show how to create a simple swarm in VirtualBox, in the case that a swarm is not already available. In the case that a Docker Swarm is already available, skip to section 2.2.
 
 In this setup, the swarm will be formed by three manager nodes, and three worker nodes, named:
 
@@ -620,21 +620,21 @@ And to start it again, this command:
 
 ### 2.2) Update Eureka configuration to leverage internal Swarm network
 
-When services are deployed inside Docker Swarm, there are multiple networks active in the running container. To be able to use correctly the client-side load balancing, each running instance must register in Eureka with the IP address corresponding to the internal network (and not the ingress network).
+When services are deployed inside Docker Swarm, there are multiple networks active in the running container. To be able to use correctly the client-side load balancing, each running instance must register with Eureka with the IP address corresponding to the internal network (and not the ingress network).
 
-Move to bookrecservice folder, edit bootstrap.properties and add the following configuration lines:
-
-    spring.cloud.inetutils.preferredNetworks[0] = 192.168
-    spring.cloud.inetutils.preferredNetworks[1] = 10.0
-
-Also move to bookrecedgeservice folder, edit bootstrap.properties and add the same lines:
+Move to `bookrecservice` folder, edit `bootstrap.properties` and add the following configuration lines:
 
     spring.cloud.inetutils.preferredNetworks[0] = 192.168
     spring.cloud.inetutils.preferredNetworks[1] = 10.0
 
-Finally, do the same for eurekaservice and hystrixservice. In general, this configuration must be added in every service which is going to register in Eureka.
+Also move to `bookrecedgeservice` folder, edit `bootstrap.properties` and add the same lines:
 
-With these changes, the services will register in Eureka with the right IP address, both when they are running standalone (192.168 network) and when they are running inside Docker Swarm (10.0 network).
+    spring.cloud.inetutils.preferredNetworks[0] = 192.168
+    spring.cloud.inetutils.preferredNetworks[1] = 10.0
+
+Finally, do the same in `eurekaservice` and `hystrixservice`. In general, this configuration must be added in every service which is going to register with Eureka.
+
+With these changes, the services will register with Eureka with the right IP address, both when they are running standalone (192.168 network) and when they are running inside Docker Swarm (10.0 network).
 
 ### 2.3) Configure Docker image build in Maven and create the Dockerfiles
 
@@ -1127,7 +1127,7 @@ Besides the addition of the plugin, and optionally enabling the automatic execut
             <plugin>
                 <groupId>com.lazerycode.jmeter</groupId>
                 <artifactId>jmeter-maven-plugin</artifactId>
-                <version>2.8.5</version>
+                <version>2.9.0</version>
                 <configuration>
                     <testResultsTimestamp>false</testResultsTimestamp>
                     <propertiesUser>
@@ -1227,7 +1227,7 @@ OWASP is a global organization focused on secure development practices. OWASP al
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>3.3.2</version>
+                <version>5.0.0-M3</version>
                 <configuration>
                     <format>ALL</format>
                 </configuration>
@@ -1245,7 +1245,7 @@ To ensure that unsecure vulnerabilities are not carried onto a live environment,
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>3.3.2</version>
+                <version>5.0.0-M3</version>
                 <configuration>
                     <format>ALL</format>
                     <failBuildOnCVSS>5</failBuildOnCVSS>
@@ -1283,7 +1283,7 @@ First, the pipeline is opened with the agent to be used for the build execution,
 pipeline {
     agent {
         docker {
-            image 'adoptopenjdk/openjdk11:jdk-11.0.2.9'
+            image 'adoptopenjdk/openjdk11:jdk-11.0.3_7'
             args '--network ci'
         }
     }
@@ -1310,7 +1310,7 @@ As the build is currently configured, it will run completely clean every time, i
     ...
     agent {
         docker {
-            image 'adoptopenjdk/openjdk11:jdk-11.0.2.9'
+            image 'adoptopenjdk/openjdk11:jdk-11.0.3_7'
             args '--network ci --mount type=volume,source=ci-maven-home,target=/root/.m2'
         }
     }
@@ -1430,7 +1430,7 @@ The following two steps will execute the integration and performance tests, once
         stage('Integration tests') {
             steps {
                 echo "-=- execute integration tests -=-"
-                sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 http://${TEST_CONTAINER_NAME}:${APP_LISTENING_PORT}/"
+                sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 http://${TEST_CONTAINER_NAME}:${APP_LISTENING_PORT}/${APP_CONTEXT_ROOT}/actuator/health"
                 sh "./mvnw failsafe:integration-test failsafe:verify -DargLine=\"-Dtest.target.server.url=http://${TEST_CONTAINER_NAME}:${APP_LISTENING_PORT}/${APP_CONTEXT_ROOT}\""
                 sh "java -jar target/dependency/jacococli.jar dump --address ${TEST_CONTAINER_NAME} --port 6300 --destfile target/jacoco-it.exec"
                 junit 'target/failsafe-reports/*.xml'
