@@ -1379,7 +1379,7 @@ As explained before, Pitest will fail when there are no mutable tests i.e. no st
     ...
 ```
 
-Of course, bookrecservice, bookrecesgeservice, as well as any other application service, should have muration testing enabled in the pipeline.
+Of course, `bookrecservice`, `bookrecesgeservice`, as well as any other application service, should have mutation testing enabled in the pipeline.
 
 ### 3.15) The pipeline code: Build the Docker image and provision the test environment
 
