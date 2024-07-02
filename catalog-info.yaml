@@ -4,13 +4,13 @@ metadata:
   name: workshop-microservices
   description: Workshop with detailed step by step instructions on how to build an exemplar microservices stack based in Spring Boot, Spring Cloud and Netflix OSS.
   tags:
-    - Microservices
-    - Java
-    - JVM
-    - Jenkins
-    - Netflix OSS
-    - Spring Boot
-    - Spring Cloud
+    - microservices
+    - java
+    - jvm
+    - jenkins
+    - netflix-oss
+    - spring-boot
+    - spring-cloud
   links:
     - url: https://github.com/deors/workshop-microservices
       title: Workshop Microservices
